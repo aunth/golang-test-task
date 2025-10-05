@@ -41,7 +41,6 @@ func (s *missionService) CreateMission(req *models.CreateMissionRequest) (*model
 		IsCompleted: false,
 	}
 
-	// If cat is assigned, check if it's available
 	if req.CatID != nil {
 		cat, err := s.catRepo.GetByID(*req.CatID)
 		if err != nil {
@@ -56,7 +55,6 @@ func (s *missionService) CreateMission(req *models.CreateMissionRequest) (*model
 		return nil, fmt.Errorf("failed to create mission: %w", err)
 	}
 
-	// Create targets
 	for _, targetReq := range req.Targets {
 		target := &models.Target{
 			MissionID:   mission.ID,
@@ -70,7 +68,6 @@ func (s *missionService) CreateMission(req *models.CreateMissionRequest) (*model
 		mission.Targets = append(mission.Targets, *target)
 	}
 
-	// If cat is assigned, mark it as unavailable
 	if req.CatID != nil {
 		if err := s.catRepo.SetAvailability(*req.CatID, false); err != nil {
 			return nil, fmt.Errorf("failed to update cat availability: %w", err)
@@ -98,16 +95,13 @@ func (s *missionService) UpdateMission(id uint, req *models.UpdateMissionRequest
 		return nil, fmt.Errorf("cannot update completed mission")
 	}
 
-	// If changing cat assignment
 	if req.CatID != nil && (mission.CatID == nil || *mission.CatID != *req.CatID) {
-		// Free up current cat if exists
 		if mission.CatID != nil {
 			if err := s.catRepo.SetAvailability(*mission.CatID, true); err != nil {
 				return nil, fmt.Errorf("failed to free up current cat: %w", err)
 			}
 		}
 
-		// Check if new cat is available
 		cat, err := s.catRepo.GetByID(*req.CatID)
 		if err != nil {
 			return nil, fmt.Errorf("cat not found: %w", err)
@@ -116,7 +110,6 @@ func (s *missionService) UpdateMission(id uint, req *models.UpdateMissionRequest
 			return nil, fmt.Errorf("cat is not available")
 		}
 
-		// Assign new cat
 		mission.CatID = req.CatID
 		if err := s.catRepo.SetAvailability(*req.CatID, false); err != nil {
 			return nil, fmt.Errorf("failed to assign new cat: %w", err)
@@ -162,14 +155,12 @@ func (s *missionService) AssignCat(missionID, catID uint) error {
 		return fmt.Errorf("cat is not available")
 	}
 
-	// Free up current cat if exists
 	if mission.CatID != nil {
 		if err := s.catRepo.SetAvailability(*mission.CatID, true); err != nil {
 			return fmt.Errorf("failed to free up current cat: %w", err)
 		}
 	}
 
-	// Assign new cat
 	if err := s.missionRepo.AssignCat(missionID, catID); err != nil {
 		return fmt.Errorf("failed to assign cat: %w", err)
 	}
@@ -191,7 +182,6 @@ func (s *missionService) CompleteMission(missionID uint) error {
 		return fmt.Errorf("mission is already completed")
 	}
 
-	// Check if all targets are completed
 	targets, err := s.targetRepo.GetByMissionID(missionID)
 	if err != nil {
 		return fmt.Errorf("failed to get targets: %w", err)
@@ -207,12 +197,10 @@ func (s *missionService) CompleteMission(missionID uint) error {
 		}
 	}
 
-	// Complete mission
 	if err := s.missionRepo.CompleteMission(missionID); err != nil {
 		return fmt.Errorf("failed to complete mission: %w", err)
 	}
 
-	// Free up cat
 	if mission.CatID != nil {
 		if err := s.catRepo.SetAvailability(*mission.CatID, true); err != nil {
 			return fmt.Errorf("failed to free up cat: %w", err)
@@ -232,7 +220,6 @@ func (s *missionService) AddTarget(missionID uint, req *models.AddTargetRequest)
 		return nil, fmt.Errorf("cannot add target to completed mission")
 	}
 
-	// Check target limit
 	count, err := s.targetRepo.CountByMissionID(missionID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count targets: %w", err)
