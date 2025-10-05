@@ -30,7 +30,7 @@ A comprehensive CRUD application for managing spy cats, missions, and targets. B
 - Docker and Docker Compose
 - Make (optional, for convenience commands)
 
-### Setup and Run (2 commands)
+### Setup and Run
 
 Prereqs: Go, Bash, Docker Desktop (Docker Compose v2 included)
 
@@ -86,7 +86,7 @@ Once the application is running, you can access:
 
 ### Create a Spy Cat
 ```bash
-curl -X POST http://localhost:8080/api/v1/cats \
+curl -X POST http://localhost:3030/api/v1/cats \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Whiskers",
@@ -98,7 +98,7 @@ curl -X POST http://localhost:8080/api/v1/cats \
 
 ### Create a Mission
 ```bash
-curl -X POST http://localhost:8080/api/v1/missions \
+curl -X POST http://localhost:3030/api/v1/missions \
   -H "Content-Type: application/json" \
   -d '{
     "cat_id": 1,
@@ -117,21 +117,12 @@ curl -X POST http://localhost:8080/api/v1/missions \
 
 ### Update Target Notes
 ```bash
-curl -X PUT http://localhost:8080/api/v1/missions/1/targets/1/notes \
+curl -X PUT http://localhost:3030/api/v1/missions/1/targets/1/notes \
   -H "Content-Type: application/json" \
   -d '{
     "notes": "Target was seen at the coffee shop. Wearing a blue jacket."
   }'
 ```
-
-## Business Rules
-
-1. **Cat Availability**: A cat can only have one active mission at a time
-2. **Mission Targets**: Each mission must have 1-3 targets
-3. **Target Completion**: Notes cannot be updated once a target is completed
-4. **Mission Completion**: A mission can only be completed when all targets are finished
-5. **Breed Validation**: Cat breeds are validated against TheCatAPI
-6. **Mission Deletion**: Missions cannot be deleted if assigned to a cat
 
 ## Development
 
@@ -165,20 +156,9 @@ curl -X PUT http://localhost:8080/api/v1/missions/1/targets/1/notes \
 - `PORT` - Server port (default: 8080)
 - `ENVIRONMENT` - Environment (default: development)
 
-## Testing
-
-Run the test suite:
-```bash
-make test
-```
-
 ## Stopping the Application
 
 To stop the database:
 ```bash
 make docker-down
 ```
-
-## License
-
-This project is part of a technical assessment for DevelopsToday.
